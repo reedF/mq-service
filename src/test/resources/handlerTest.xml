@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:rabbit="http://www.springframework.org/schema/rabbit"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+	http://www.springframework.org/schema/beans/spring-beans-3.2.xsd 
+	http://www.springframework.org/schema/rabbit 
+	http://www.springframework.org/schema/rabbit/spring-rabbit-1.3.xsd
+    ">
+	<!-- handler setting can using Transaction -->
+	<import resource="classpath:rabbitTest.xml" />
+	<bean id="testHandler" class="com.reed.mq.rabbit.AbstractRabbitMsgHandler" />
+	<!-- tx -->
+	<bean id="rabbitTxManager"
+		class="org.springframework.amqp.rabbit.transaction.RabbitTransactionManager">
+		<property name="connectionFactory" ref="rabbitConnectionFactory" />
+	</bean>
+	<bean id="jsonMessageConverter"
+		class="org.springframework.amqp.support.converter.JsonMessageConverter">
+		<property name="classMapper">
+			<bean class="org.springframework.amqp.support.converter.DefaultClassMapper">
+				<property name="defaultType" value="java.lang.Object" />
+			</bean>
+		</property>
+	</bean>
+	<rabbit:queue name="testQueue" />
+	<rabbit:listener-container
+		connection-factory="rabbitConnectionFactory" message-converter="jsonMessageConverter"
+		transaction-manager="rabbitTxManager" channel-transacted="true">
+		<rabbit:listener ref="testHandler" method="handleMessage"
+			queues="testQueue" />
+	</rabbit:listener-container>
+
+</beans>

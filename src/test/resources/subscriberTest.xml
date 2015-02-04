@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.2.xsd">
+
+	<import resource="classpath:rabbitTest.xml" />
+
+	<bean id="rabbitSubscriberMessageHandler"
+		class="com.reed.mq.rabbit.DefaultRabbitSubscriberMessageHandler" />
+	<bean id="jsonMessageConverter"
+		class="org.springframework.amqp.support.converter.JsonMessageConverter">
+		<property name="classMapper">
+			<bean class="org.springframework.amqp.support.converter.DefaultClassMapper">
+				<property name="defaultType" value="java.lang.Object" />
+			</bean>
+		</property>
+	</bean>
+
+	<bean id="messageListenerAdapter"
+		class="org.springframework.amqp.rabbit.listener.adapter.MessageListenerAdapter">
+		<constructor-arg ref="rabbitSubscriberMessageHandler" />
+		<constructor-arg ref="jsonMessageConverter" />
+	</bean>
+	<bean id="rabbitSubscriberConfiguration" class="com.reed.mq.rabbit.RabbitSubscriberConfiguration">
+		<constructor-arg ref="rabbitConnectionFactory" />
+		<constructor-arg value="testQueue" />
+		<constructor-arg ref="rabbitSubscriberMessageHandler" />
+	</bean>
+
+</beans>
